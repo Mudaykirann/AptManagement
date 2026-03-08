@@ -1,24 +1,30 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Apartment Management System 🏢
 
-# Run and deploy your AI Studio app
+![Status](https://img.shields.io/badge/Status-In--Progress-orange)
 
-This contains everything you need to run your app locally.
+An automated solution designed to streamline the management of residential complexes, enhancing the communication between property managers and tenants.
 
-View your app in AI Studio: https://ai.studio/apps/a324d56f-f1d6-463f-a29d-3a931220297f
+> **Note:** This project is currently **In Progress**. Features are being added regularly, and the documentation will be updated as the codebase evolves.
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## 🚀 Project Overview
+The Apartment Management System is built to replace manual record-keeping with a digital interface. It handles everything from resident data and maintenance logs to financial tracking and security management.
 
+## ✨ Key Features (Planned & Existing)
+* **Dashboard:** High-level overview for admins to monitor occupancy and pending requests.
+* **Resident Portal:** Private access for tenants to view bills and update profiles.
+* **Maintenance Request System:** Submit, track, and resolve service tickets.
+* **Billing & Payments:** Automated generation of maintenance dues and history tracking.
+* **Visitor Log:** Digital registry for security personnel to track entries/exits.
+* **Announcement Board:** Instant digital notices for community-wide updates.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠️ Tech Stack
+* **Frontend:** HTML5, CSS3, JavaScript
+* **Backend:** (Add your backend here, e.g., Node.js / Java / Python)
+* **Database:** (Add your database here, e.g., MySQL / MongoDB)
 
-
-
-Please feel free to Fork this and Pull requests , any update is appreciated 👍
+## ⚙️ Installation & Setup
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Mudaykirann/AptManagement.git](https://github.com/Mudaykirann/AptManagement.git)

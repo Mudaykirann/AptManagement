@@ -20,7 +20,7 @@ The Apartment Management System is built to replace manual record-keeping with a
 * **Announcement Board:** Instant digital notices for community-wide updates.
 
 ## 🛠️ Tech Stack
-* **Frontend:** HTML5, CSS3, JavaScript
+* **Frontend:** ReactJS, TailwindCSS
 * **Backend:** (Add your backend here, e.g., Node.js / Java / Python)
 * **Database:** (Add your database here, e.g., MySQL / MongoDB)
 

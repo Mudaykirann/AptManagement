@@ -1,14 +1,45 @@
-import React, { useState } from 'react';
-import { MOCK_COMPLAINTS } from '../../utils/mockData';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { fetchComplaints, updateComplaintStatus as apiUpdateStatus } from '../../utils/api';
 import { Complaint, ComplaintStatus } from '../../types';
 import { Search, Filter, MessageSquare, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
 const AdminManageComplaints: React.FC = () => {
-  const [complaints, setComplaints] = useState<Complaint[]>(MOCK_COMPLAINTS);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const updateStatus = (id: string, status: ComplaintStatus) => {
-    setComplaints(complaints.map(c => c.id === id ? { ...c, status } : c));
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchComplaints();
+        setComplaints(data);
+      } catch (err) {
+        console.error('Failed to load complaints:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const updateStatus = async (id: string, status: ComplaintStatus) => {
+    try {
+      const updated = await apiUpdateStatus(id, status);
+      setComplaints(complaints.map(c => c.id === id ? updated : c));
+      toast.success(`Complaint marked as ${status.replace('_', ' ')}`);
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      toast.error('Failed to update complaint status.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

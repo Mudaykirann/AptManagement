@@ -1,21 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_COMPLAINTS, MOCK_BILLS, MOCK_USERS } from '../../utils/mockData';
+import { fetchComplaints, fetchBills, fetchUsers } from '../../utils/api';
 import StatCard from '../../components/StatCard';
 import { Users, MessageSquare, CreditCard, TrendingUp, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { Complaint, Bill, User } from '../../types';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [c, b, u] = await Promise.all([
+          fetchComplaints(),
+          fetchBills(),
+          fetchUsers(),
+        ]);
+        setComplaints(c);
+        setBills(b);
+        setUsers(u);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
   
-  const totalResidents = MOCK_USERS.filter(u => u.role === 'RESIDENT').length;
-  const openComplaints = MOCK_COMPLAINTS.filter(c => c.status !== 'RESOLVED').length;
-  const pendingPayments = MOCK_BILLS.filter(b => b.status === 'PENDING').length;
-  const totalOutstanding = MOCK_BILLS
+  const totalResidents = users.filter(u => u.role === 'RESIDENT').length;
+  const openComplaints = complaints.filter(c => c.status !== 'RESOLVED').length;
+  const pendingPayments = bills.filter(b => b.status === 'PENDING').length;
+  const totalOutstanding = bills
     .filter(b => b.status === 'PENDING')
     .reduce((sum, b) => sum + b.amount, 0);
 
-  const recentComplaints = MOCK_COMPLAINTS.slice(0, 5);
+  const recentComplaints = complaints.slice(0, 5);
 
   return (
     <div className="space-y-8">

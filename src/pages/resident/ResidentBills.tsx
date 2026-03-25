@@ -1,11 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_BILLS } from '../../utils/mockData';
+import { fetchBills, payBill as apiPayBill } from '../../utils/api';
+import { Bill } from '../../types';
 import { CreditCard, Download, ExternalLink } from 'lucide-react';
 
 const ResidentBills: React.FC = () => {
   const { user } = useAuth();
-  const bills = MOCK_BILLS.filter(b => b.residentId === user?.id);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchBills();
+        setBills(data);
+      } catch (err) {
+        console.error('Failed to load bills:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handlePay = async (id: string) => {
+    try {
+      const updated = await apiPayBill(id);
+      setBills(bills.map(b => b.id === id ? updated : b));
+      toast.success('Payment confirmed! Thank you.');
+    } catch (err) {
+      console.error('Failed to pay bill:', err);
+      toast.error('Payment failed. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -41,7 +77,10 @@ const ResidentBills: React.FC = () => {
                 <p className="text-xl font-bold text-slate-900">${bill.amount}</p>
               </div>
               {bill.status === 'PENDING' ? (
-                <button className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
+                <button 
+                  onClick={() => handlePay(bill.id)}
+                  className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all"
+                >
                   Pay Now
                 </button>
               ) : (

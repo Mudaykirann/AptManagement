@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+server/
+implementation_plan.md
+walkthrough.md 
+
+
+
+

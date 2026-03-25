@@ -1,23 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_COMPLAINTS, MOCK_BILLS, MOCK_ANNOUNCEMENTS } from '../../utils/mockData';
+import { fetchComplaints, fetchBills, fetchAnnouncements } from '../../utils/api';
 import StatCard from '../../components/StatCard';
 import { MessageSquare, CreditCard, Bell, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { Complaint, Bill, Announcement } from '../../types';
 
 const ResidentDashboard: React.FC = () => {
   const { user } = useAuth();
-  
-  const myComplaints = MOCK_COMPLAINTS.filter(c => c.residentId === user?.id);
-  const openComplaints = myComplaints.filter(c => c.status !== 'RESOLVED').length;
-  
-  const myBills = MOCK_BILLS.filter(b => b.residentId === user?.id);
-  const pendingBills = myBills.filter(b => b.status === 'PENDING').length;
-  const totalPendingAmount = myBills
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [c, b, a] = await Promise.all([
+          fetchComplaints(),
+          fetchBills(),
+          fetchAnnouncements(),
+        ]);
+        setComplaints(c);
+        setBills(b);
+        setAnnouncements(a);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
+
+  const openComplaints = complaints.filter(c => c.status !== 'RESOLVED').length;
+  const pendingBills = bills.filter(b => b.status === 'PENDING').length;
+  const totalPendingAmount = bills
     .filter(b => b.status === 'PENDING')
     .reduce((sum, b) => sum + b.amount, 0);
 
-  const latestAnnouncements = MOCK_ANNOUNCEMENTS.slice(0, 3);
+  const latestAnnouncements = announcements.slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -89,8 +119,8 @@ const ResidentDashboard: React.FC = () => {
             </Link>
           </div>
           <div className="space-y-4">
-            {myComplaints.length > 0 ? (
-              myComplaints.slice(0, 3).map(comp => (
+            {complaints.length > 0 ? (
+              complaints.slice(0, 3).map(comp => (
                 <div key={comp.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
                   <div>
                     <h3 className="font-bold text-slate-900 mb-1">{comp.title}</h3>

@@ -1,8 +1,34 @@
-import React from 'react';
-import { MOCK_ANNOUNCEMENTS } from '../../utils/mockData';
+import React, { useState, useEffect } from 'react';
+import { fetchAnnouncements } from '../../utils/api';
+import { Announcement } from '../../types';
 import { Bell, Calendar, Info } from 'lucide-react';
 
 const ResidentAnnouncements: React.FC = () => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchAnnouncements();
+        setAnnouncements(data);
+      } catch (err) {
+        console.error('Failed to load announcements:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,7 +37,7 @@ const ResidentAnnouncements: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {MOCK_ANNOUNCEMENTS.map((ann) => (
+        {announcements.map((ann) => (
           <div key={ann.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row gap-6">
             <div className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center ${
               ann.priority === 'HIGH' ? 'bg-red-50 text-red-600' : 

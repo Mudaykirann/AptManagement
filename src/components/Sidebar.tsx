@@ -28,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const adminLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/users', icon: UserIcon, label: 'Manage Users' },
     { to: '/admin/complaints', icon: MessageSquare, label: 'Manage Complaints' },
     { to: '/admin/bills', icon: CreditCard, label: 'Manage Bills' },
     { to: '/admin/announcements', icon: Bell, label: 'Announcements' },
@@ -35,6 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const residentLinks = [
     { to: '/resident', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/resident/profile', icon: UserIcon, label: 'My Profile' },
     { to: '/resident/complaints', icon: MessageSquare, label: 'Complaints' },
     { to: '/resident/bills', icon: CreditCard, label: 'Bills' },
     { to: '/resident/announcements', icon: Bell, label: 'Announcements' },

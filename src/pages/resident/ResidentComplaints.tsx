@@ -1,33 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_COMPLAINTS } from '../../utils/mockData';
+import { fetchComplaints, createComplaint as apiCreateComplaint } from '../../utils/api';
 import { Complaint } from '../../types';
 import { Plus, Search, Filter, MessageSquare } from 'lucide-react';
 
 const ResidentComplaints: React.FC = () => {
   const { user } = useAuth();
-  const [complaints, setComplaints] = useState<Complaint[]>(
-    MOCK_COMPLAINTS.filter(c => c.residentId === user?.id)
-  );
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newComplaint, setNewComplaint] = useState({ title: '', description: '' });
 
-  const handleAddComplaint = (e: React.FormEvent) => {
-    e.preventDefault();
-    const complaint: Complaint = {
-      id: `c${Date.now()}`,
-      residentId: user!.id,
-      residentName: user!.name,
-      flatNumber: user!.flatNumber || 'N/A',
-      title: newComplaint.title,
-      description: newComplaint.description,
-      status: 'OPEN',
-      createdAt: new Date().toISOString(),
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchComplaints();
+        setComplaints(data);
+      } catch (err) {
+        console.error('Failed to load complaints:', err);
+      } finally {
+        setLoading(false);
+      }
     };
-    setComplaints([complaint, ...complaints]);
-    setIsModalOpen(false);
-    setNewComplaint({ title: '', description: '' });
+    load();
+  }, []);
+
+  const handleAddComplaint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const complaint = await apiCreateComplaint(newComplaint.title, newComplaint.description);
+      setComplaints([complaint, ...complaints]);
+      setIsModalOpen(false);
+      setNewComplaint({ title: '', description: '' });
+    } catch (err) {
+      console.error('Failed to create complaint:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

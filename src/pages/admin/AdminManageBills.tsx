@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { MOCK_BILLS, MOCK_USERS } from '../../utils/mockData';
-import { Bill } from '../../types';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { fetchBills, createBill as apiCreateBill, deleteBill as apiDeleteBill, fetchUsers } from '../../utils/api';
+import { Bill, User } from '../../types';
 import { Plus, Search, CreditCard, Trash2, Edit2 } from 'lucide-react';
 
 const AdminManageBills: React.FC = () => {
-  const [bills, setBills] = useState<Bill[]>(MOCK_BILLS);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [residents, setResidents] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBill, setNewBill] = useState({
     residentId: '',
@@ -14,32 +17,60 @@ const AdminManageBills: React.FC = () => {
     type: 'MAINTENANCE' as Bill['type']
   });
 
-  const residents = MOCK_USERS.filter(u => u.role === 'RESIDENT');
-
-  const handleAddBill = (e: React.FormEvent) => {
-    e.preventDefault();
-    const resident = residents.find(r => r.id === newBill.residentId);
-    if (!resident) return;
-
-    const bill: Bill = {
-      id: `b${Date.now()}`,
-      residentId: resident.id,
-      residentName: resident.name,
-      title: newBill.title,
-      amount: Number(newBill.amount),
-      dueDate: newBill.dueDate,
-      status: 'PENDING',
-      type: newBill.type,
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [b, u] = await Promise.all([
+          fetchBills(),
+          fetchUsers('RESIDENT'),
+        ]);
+        setBills(b);
+        setResidents(u);
+      } catch (err) {
+        console.error('Failed to load bills:', err);
+      } finally {
+        setLoading(false);
+      }
     };
+    load();
+  }, []);
 
-    setBills([bill, ...bills]);
-    setIsModalOpen(false);
-    setNewBill({ residentId: '', title: '', amount: '', dueDate: '', type: 'MAINTENANCE' });
+  const handleAddBill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const bill = await apiCreateBill({
+        residentId: newBill.residentId,
+        title: newBill.title,
+        amount: Number(newBill.amount),
+        dueDate: newBill.dueDate,
+        type: newBill.type,
+      });
+      setBills([bill, ...bills]);
+      setIsModalOpen(false);
+      setNewBill({ residentId: '', title: '', amount: '', dueDate: '', type: 'MAINTENANCE' });
+      toast.success('Bill generated successfully!');
+    } catch (err) {
+      console.error('Failed to create bill:', err);
+      toast.error('Failed to create bill. Please try again.');
+    }
   };
 
-  const deleteBill = (id: string) => {
-    setBills(bills.filter(b => b.id !== id));
+  const handleDeleteBill = async (id: string) => {
+    try {
+      await apiDeleteBill(id);
+      setBills(bills.filter(b => b.id !== id));
+    } catch (err) {
+      console.error('Failed to delete bill:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -85,7 +116,7 @@ const AdminManageBills: React.FC = () => {
                 <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <p className="font-bold text-slate-900">{bill.residentName}</p>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider">ID: {bill.residentId}</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider">ID: {bill.residentId.slice(0,8)}</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -114,7 +145,7 @@ const AdminManageBills: React.FC = () => {
                         <Edit2 size={18} />
                       </button>
                       <button 
-                        onClick={() => deleteBill(bill.id)}
+                        onClick={() => handleDeleteBill(bill.id)}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 size={18} />

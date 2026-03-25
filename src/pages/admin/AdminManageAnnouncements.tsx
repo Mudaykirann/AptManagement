@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { MOCK_ANNOUNCEMENTS } from '../../utils/mockData';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { fetchAnnouncements, createAnnouncement as apiCreateAnnouncement, deleteAnnouncement as apiDeleteAnnouncement } from '../../utils/api';
 import { Announcement } from '../../types';
 import { Plus, Bell, Trash2, Edit2, Calendar } from 'lucide-react';
 
 const AdminManageAnnouncements: React.FC = () => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newAnn, setNewAnn] = useState({
     title: '',
@@ -12,24 +14,54 @@ const AdminManageAnnouncements: React.FC = () => {
     priority: 'LOW' as Announcement['priority']
   });
 
-  const handleAddAnnouncement = (e: React.FormEvent) => {
-    e.preventDefault();
-    const announcement: Announcement = {
-      id: `a${Date.now()}`,
-      title: newAnn.title,
-      content: newAnn.content,
-      date: new Date().toISOString().split('T')[0],
-      priority: newAnn.priority,
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchAnnouncements();
+        setAnnouncements(data);
+      } catch (err) {
+        console.error('Failed to load announcements:', err);
+      } finally {
+        setLoading(false);
+      }
     };
+    load();
+  }, []);
 
-    setAnnouncements([announcement, ...announcements]);
-    setIsModalOpen(false);
-    setNewAnn({ title: '', content: '', priority: 'LOW' });
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const announcement = await apiCreateAnnouncement({
+        title: newAnn.title,
+        content: newAnn.content,
+        priority: newAnn.priority,
+      });
+      setAnnouncements([announcement, ...announcements]);
+      setIsModalOpen(false);
+      setNewAnn({ title: '', content: '', priority: 'LOW' });
+      toast.success('Announcement broadcasted successfully!');
+    } catch (err) {
+      console.error('Failed to create announcement:', err);
+      toast.error('Failed to post announcement.');
+    }
   };
 
-  const deleteAnnouncement = (id: string) => {
-    setAnnouncements(announcements.filter(a => a.id !== id));
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await apiDeleteAnnouncement(id);
+      setAnnouncements(announcements.filter(a => a.id !== id));
+    } catch (err) {
+      console.error('Failed to delete announcement:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -81,7 +113,7 @@ const AdminManageAnnouncements: React.FC = () => {
                     <Edit2 size={18} />
                   </button>
                   <button 
-                    onClick={() => deleteAnnouncement(ann.id)}
+                    onClick={() => handleDeleteAnnouncement(ann.id)}
                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 size={18} />

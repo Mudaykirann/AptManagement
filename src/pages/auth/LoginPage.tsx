@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Role } from '../../types';
-import { Building2, Mail, Lock, Loader2 } from 'lucide-react';
+import { Building2, Mail, Lock, LogIn } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<Role>('RESIDENT');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,10 +19,11 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(email, role);
+      await login(email, password, role);
       navigate(role === 'ADMIN' ? '/admin' : '/resident');
-    } catch (err) {
-      setError('Invalid email or role. Try admin@apt.com or john@apt.com');
+    } catch (err: any) {
+      const message = err?.response?.data?.error || 'Login failed. Please check your credentials.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -94,26 +96,43 @@ const LoginPage: React.FC = () => {
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
               <input
                 type="password"
-                disabled
-                placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl cursor-not-allowed opacity-60"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               />
             </div>
-            <p className="text-xs text-slate-400 ml-1">Password is not required for mock login</p>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-          >
-            {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Sign In'}
-          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-emerald-200 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:opacity-50"
+            >
+              {isLoading ? 'Signing in...' : 'Sign In'}
+              {!isLoading && <LogIn size={18} />}
+            </button>
+          </div>
+
+          {/* Signup Link */}
+          {role === 'RESIDENT' && (
+            <div className="text-center mt-4">
+              <span className="text-sm text-slate-500">Don't have an account? </span>
+              <Link to="/signup" className="text-sm font-bold text-emerald-500 hover:text-emerald-600">
+                Sign up
+              </Link>
+            </div>
+          )}
         </form>
 
         <div className="mt-8 pt-6 border-t border-slate-100 text-center">
           <p className="text-sm text-slate-500">
-            Demo: <span className="font-mono text-emerald-600">john@apt.com</span> (Resident) or <span className="font-mono text-emerald-600">admin@apt.com</span> (Admin)
+            Demo: <span className="font-mono text-emerald-600">john@apt.com</span> / <span className="font-mono text-emerald-600">resident123</span> (Resident)
+          </p>
+          <p className="text-sm text-slate-500 mt-1">
+            <span className="font-mono text-emerald-600">admin@apt.com</span> / <span className="font-mono text-emerald-600">admin123</span> (Admin)
           </p>
         </div>
       </div>

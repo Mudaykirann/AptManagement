@@ -127,14 +127,7 @@ const LoginPage: React.FC = () => {
           )}
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <p className="text-sm text-slate-500">
-            Demo: <span className="font-mono text-emerald-600">john@apt.com</span> / <span className="font-mono text-emerald-600">resident123</span> (Resident)
-          </p>
-          <p className="text-sm text-slate-500 mt-1">
-            <span className="font-mono text-emerald-600">admin@apt.com</span> / <span className="font-mono text-emerald-600">admin123</span> (Admin)
-          </p>
-        </div>
+
       </div>
     </div>
   );

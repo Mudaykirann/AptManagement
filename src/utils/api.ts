@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { User, Complaint, ComplaintStatus, Bill, Announcement } from '../types';
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true, // Need this to send httpOnly cookies
 });
 
@@ -55,7 +55,7 @@ export async function loginUser(email: string, password: string, role: string): 
   return data;
 }
 
-export async function signupUser(userData: { name: string, email: string, password: string, flatNumber: string }): Promise<{ accessToken: string; user: User }> {
+export async function signupUser(userData: { name: string, email: string, password: string, role?: string, adminSecret?: string, flatNumber?: string }): Promise<{ accessToken: string; user: User }> {
   const { data } = await api.post('/auth/signup', userData);
   return data;
 }

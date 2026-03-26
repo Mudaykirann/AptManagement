@@ -29,7 +29,8 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        const baseURL = import.meta.env.VITE_API_URL || '/api';
+        const { data } = await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true });
         
         localStorage.setItem('apt_token', data.accessToken);
         localStorage.setItem('apt_user', JSON.stringify(data.user)); // Update user info just in case
